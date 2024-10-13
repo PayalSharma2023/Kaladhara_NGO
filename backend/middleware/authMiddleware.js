@@ -1,47 +1,24 @@
-require('dotenv').config();
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
+const jwt = require("jsonwebtoken");
 
-const requireAuth = async (req, res, next) =>{
-    const token = req.cookies.jwt;
+const verifyToken = async (req, res, next) => {
+  const token =
+    req.cookies.jwt || req.header("Authorization")?.replace("Bearer ", "");
 
-    //check json web token exists and is verified
-    if(token){
-        jwt.verify(token, process.env.JWT_SECRET , (err, decodedToken)=>{
-            if(err){
-                console.log(err.message);
-                res.redirect('/login');
-            }
-            else {
-                console.log(decodedToken);
-                next();
-            }
-        })
-    }
-    res.redirect('/login')
-}
+  if (!token) {
+    return res.status(401).json({
+      mssg: "No, token, authoriztion denied",
+    });
+  }
+  try {
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decode;
+    console.log("the decoded user is :", req.user);
+    next();
+  } catch (err) {
+    res.status(400).json({
+      mssg: "token is invalid",
+    });
+  }
+};
 
-const checkUser = (req, res, next)=>{
-    const token = req.cookies.jwt;
-    if(token){
-        jwt.verify(token, process.env.JWT_SECRET , async (err, decodedToken) =>{
-            if(err){
-                console.log(err.message);
-                res.locals.user = null;
-                next();
-            }
-            else{
-                console.log(decodedToken);
-                const user = await User.findById(decodedToken.id);
-                res.locals.user = user;
-                next();
-            }
-        })
-    }
-    else{
-        res.locals.user = null;
-        next();
-    }
-}
-
-module.exports = {requireAuth, checkUser}
+module.exports = verifyToken;
