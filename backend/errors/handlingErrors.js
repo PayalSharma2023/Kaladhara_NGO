@@ -1,6 +1,6 @@
 const handlingErrors = (err) => {
     console.log(err.message, err.code);
-    let errors = { email: "", password: "" };
+    let errors = { email: "", password: "", role: "" , photo: ""};
   
     //incorrect email
     if (err.message === "incorrect email") {
