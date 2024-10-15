@@ -31,7 +31,7 @@ const approveVolunteer = async (req, res) => {
 const getVolunteersAwaitingApproval = async (req, res) => {
     try {
         const volunteers = await User.find({ role: 'volunteer', isApproved: false }).select('-password');
-        res.status(200).json({ volunteers });
+        res.status(200).json(volunteers);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error fetching volunteers' });
@@ -42,7 +42,7 @@ const getVolunteersAwaitingApproval = async (req, res) => {
 const getAllVolunteers = async (req, res) => {
     try {
         const volunteers = await User.find({ role: 'volunteer' }).select('-password');
-        res.status(200).json({ volunteers });
+        res.status(200).json(volunteers);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error fetching volunteers' });

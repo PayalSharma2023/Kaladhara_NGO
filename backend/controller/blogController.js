@@ -12,8 +12,8 @@ cloudinary.config({
 
 module.exports.blog_get_all = async (req, res) => {
   try{
-    const blogs = await Blog.find();
-    res.status(200).json({blogs})
+    const blogs = await Blog.find({}).sort(-1);
+    res.status(200).json(blogs)
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: 'Server error fetching blogs' });
@@ -50,7 +50,7 @@ module.exports.blog_post = async (req, res) => {
     });
 
     // const populatedBlog = await blog.populate("Createdby", "email description");
-    res.status(201).json({ blog });
+    res.status(201).json(blog);
 
     // const image = req.files.photo;
     // // Check if files were uploaded
@@ -88,7 +88,6 @@ module.exports.blog_post = async (req, res) => {
 module.exports.blog_update = async (req, res) => {
   try {
     const blogId = req.params.id;
-    const {updates} = req.body;
     const user = req.user;
 
     // Log the update operation
@@ -107,9 +106,8 @@ module.exports.blog_update = async (req, res) => {
 
      // Perform the update
      const updatedBlog = await Blog.findByIdAndUpdate(
-      blogId,
-      {$set: updates},
-      {new: true}
+      {_id : blogId},
+      ...req.body
     );
 
     if (!updatedBlog) {
@@ -148,10 +146,7 @@ module.exports.blog_delete = async (req, res) => {
       return res.status(404).json({ message: 'Blog not found.' });
     }
 
-    res.status(200).json({
-      message: 'Blog deleted successfully.',
-      blog: deletedBlog,
-    });
+    res.status(200).json(blog);
 
   } catch (err) {
     console.error('Error deleting blog:', err);
