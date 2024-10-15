@@ -10,6 +10,16 @@ cloudinary.config({
   api_secret: process.env.API_SECRET, // Click 'View API Keys' above to copy your API secret
 });
 
+module.exports.blog_get_all = async (req, res) => {
+  try{
+    const blogs = await Blog.find({}).sort(-1);
+    res.status(200).json(blogs)
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: 'Server error fetching blogs' });
+  }
+};
+
 module.exports.blog_get_by_id = async (req, res) => {
   try {
     const blogId = req.params.id; // Assuming the route is /blogs/:id
@@ -27,19 +37,20 @@ module.exports.blog_get_by_id = async (req, res) => {
 };
 
 module.exports.blog_post = async (req, res) => {
-  const { title, body } = req.body;
+  const { title, body, snippet, tags } = req.body;
   try {
     const volunteerId = req.user.id;
     const blog = await Blog.create({
       title,
-      // snippet,
+      snippet,
       body,
+      tags,
       Createdby: volunteerId,
       // image: result.secure_url,
     });
 
-    // const populatedBlog = await blog.populate("createdBy", "name email image");
-    res.status(201).json({ blog });
+    // const populatedBlog = await blog.populate("Createdby", "email description");
+    res.status(201).json(blog);
 
     // const image = req.files.photo;
     // // Check if files were uploaded
@@ -77,7 +88,6 @@ module.exports.blog_post = async (req, res) => {
 module.exports.blog_update = async (req, res) => {
   try {
     const blogId = req.params.id;
-    const {updates} = req.body;
     const user = req.user;
 
     // Log the update operation
@@ -96,9 +106,8 @@ module.exports.blog_update = async (req, res) => {
 
      // Perform the update
      const updatedBlog = await Blog.findByIdAndUpdate(
-      blogId,
-      {$set: updates},
-      {new: true}
+      {_id : blogId},
+      ...req.body
     );
 
     if (!updatedBlog) {
@@ -137,13 +146,84 @@ module.exports.blog_delete = async (req, res) => {
       return res.status(404).json({ message: 'Blog not found.' });
     }
 
-    res.status(200).json({
-      message: 'Blog deleted successfully.',
-      blog: deletedBlog,
-    });
+    res.status(200).json(blog);
 
   } catch (err) {
     console.error('Error deleting blog:', err);
     res.status(500).json({ message: 'Server error.', error: err.message });
+  }
+};
+
+module.exports.blog_search = async (req, res) => {
+  try {
+    const {
+      tags,
+      limit = 10,
+      skip = 0,
+      sortBy = "date",
+      order = "desc",
+      searchTerm,   
+    } = req.query;
+
+    let filter = {};
+
+    if (tags) {
+      const tagArray = tags.split(",");
+      filter.tags = { $in: tagArray }; // This will match blogs that have any of the provided tags
+    }
+
+    if(searchTerm){
+      filter.$or = [
+        {title: {$regex: searchTerm, $options: "i"}},
+        {snippet:{$regex: searchTerm, $options: "i"}},
+        {body: {$regex: searchTerm, $options: "i"}}
+      ]
+    }
+
+    // Convert limit and skip to integers
+    const parsedLimit = parseInt(limit, 10);
+    const parsedSkip = parseInt(skip, 10);
+    if (isNaN(parsedLimit) || isNaN(parsedSkip)) {
+      return res.status(400).json({ message: "Invalid pagination parameters" });
+    }
+
+    console.log(req.query);
+
+    // Define valid sort fields to prevent invalid queries
+    const validSortFields = ["date", "title", "Createby"];
+    if (!validSortFields.includes(sortBy)) {
+      return res.status(400).json({ message: "Invalid sort field" });
+    }
+
+    // Convert 'order' to lowercase to make the comparison case-insensitive
+    const sortOrder = order.toLowerCase() === "asc" ? 1 : -1;
+
+    // Define the sorting object dynamically
+    const sorting = {};
+    sorting[sortBy] = sortOrder;
+
+    //filter logic
+    const article = await Blog
+      .find(filter)
+      .sort(sorting)
+      .limit(parsedLimit)
+      .skip(parsedSkip);
+
+    //total no.of documents
+    const count = await Blog.countDocuments(filter);
+
+    res.status(200).json({
+      message: "Blogs retrieved successfully",
+      article,
+      total: count,
+      limit: parsedLimit,
+      offset: parsedSkip,
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "internal server error",
+    });
   }
 };
