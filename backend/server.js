@@ -22,6 +22,10 @@ app.use(fileUplaod({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookies());
+app.use((req, res, next) => {
+    console.log(req.path, req.method)
+    next();
+})
 
 
 //routes
@@ -29,7 +33,7 @@ app.get('/', (req, res)=>{
     res.send("<div> KALADHARA NGO </div>")
 })
 app.use('/api/auth', authRouter);
-app.use('/users', blogRouter);
+app.use('/api/blog', blogRouter);
 app.use('/admin', adminRouter);
 
 
