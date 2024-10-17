@@ -14,13 +14,15 @@ import {
   Settings,
 } from "lucide-react"
 import AppRoutes from "./routes/AppRoutes";
+import { useAuthContext } from "./hooks/useAuthContext";
 
 function App() {
+  const {user} = useAuthContext()
   return (
     <div className="App">
       <BrowserRouter>
         <div className="flex h-screen">
-          <Sidebar>
+          {user && (<Sidebar>
             <SidebarItem
             icon={<LayoutDashboard size={20}/>}
             text="Dashboard"
@@ -34,7 +36,7 @@ function App() {
             <hr className="my-3"/>
             <SidebarItem icon={<Settings size={20}/>} text="Settings" to="/settings" alert={false}/>
             <SidebarItem icon={<LifeBuoy size={20}/>} text="Help"to="/help" alert={false}/>
-          </Sidebar>
+          </Sidebar>)}
           <div  className="flex flex-col flex-grow">
             <Navbar />
             <div className="pages p-6 flex-grow bg-gray-100 text-black overflow-auto">

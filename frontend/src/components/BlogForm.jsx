@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useBlogsContext } from "../hooks/useBlogsHook";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 export function BlogForm() {
   const { dispatch } = useBlogsContext();
@@ -11,6 +12,8 @@ export function BlogForm() {
   const [emptyFields, setEmptyFields] = useState([]);
   const [form, setForm] = useState(true);
 
+  const { user } = useAuthContext();
+
   const toggleForm = () => {
     setForm((prevForm) => !prevForm);
   };
@@ -18,28 +21,36 @@ export function BlogForm() {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevents page reload
 
-    const blog = {title, snippet, body};
+    if (!user) {
+      setError("You must be logged in");
+      return;
+    }
+    if (user.role === "user") {
+      setError('Access denied');
+      return;
+    }
+    const blog = { title, snippet, body };
 
     const response = await fetch("/api/blog", {
       method: "POST",
       body: JSON.stringify(blog),
       headers: {
-        "content-Type" : "application/json",
+        "content-Type": "application/json",
       },
     });
     const json = await response.json();
 
-    if(!response.ok){
+    if (!response.ok) {
       setError(json.error);
       setEmptyFields(json.emptyFields);
     }
-    if (response.ok){
+    if (response.ok) {
       setError(null);
       setTitle("");
       setSnippet("");
       setBody("");
       console.log("new blog added", json);
-      dispatch({type: "CREATE_BLOG", payload: json});
+      dispatch({ type: "CREATE_BLOG", payload: json });
     }
   };
 
@@ -49,28 +60,29 @@ export function BlogForm() {
         <div className={`w-96 m-4 ${form ? "hidden" : "block"}`}>
           <div className="flex flex-col m-2 p-2">
             <label htmlFor="title">title</label>
-            <input 
-            type="text" 
-            onChange={(e)=>setTitle(e.target.value)}
-            value={title} 
-            className={emptyFields.includes('title') ? 'error p-2': 'p-2'}  
+            <input
+              type="text"
+              onChange={(e) => setTitle(e.target.value)}
+              value={title}
+              className={emptyFields.includes("title") ? "error p-2" : "p-2"}
             />
           </div>
           <div className="flex flex-col m-2 p-2">
             <label htmlFor="snippet">snippet</label>
-            <textarea rows={2} 
-            onChange={(e)=>setSnippet(e.target.value)}
-            value={snippet}
-            className={emptyFields.includes('snippet') ? 'error': ''} 
+            <textarea
+              rows={2}
+              onChange={(e) => setSnippet(e.target.value)}
+              value={snippet}
+              className={emptyFields.includes("snippet") ? "error" : ""}
             />
           </div>
           <div className="flex flex-col m-2 p-2">
             <label htmlFor="body">body</label>
             <textarea
-            rows={8}
-            onChange={(e)=>setBody(e.target.value)} 
-            value={body}
-            className={emptyFields.includes('body') ? 'error': ''} 
+              rows={8}
+              onChange={(e) => setBody(e.target.value)}
+              value={body}
+              className={emptyFields.includes("body") ? "error" : ""}
             />
           </div>
           <button
@@ -83,15 +95,17 @@ export function BlogForm() {
           {error && <div className="p-4 ml-4 text-red-500">{error}</div>}
         </div>
       </form>
-      <button
-        type="button"
-        onClick={toggleForm}
-        className={` ml-8 p-2 bg-green-600 rounded text-white ${
-          form ? "block" : "hidden"
-        } `}
-      >
-        Add Blog
-      </button>
+      {user ? (
+        <button
+          type="button"
+          onClick={toggleForm}
+          className={` ml-8 p-2 bg-green-600 rounded text-white ${
+            form ? "block" : "hidden"
+          } `}
+        >
+          Add Blog
+        </button>
+      ): ''}
     </div>
   );
 }

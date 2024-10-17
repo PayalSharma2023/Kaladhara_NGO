@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 app.get('/', (req, res)=>{
     res.send("<div> KALADHARA NGO </div>")
 })
-app.use('/api/auth', authRouter);
+app.use('/api/user', authRouter);
 app.use('/api/blog', blogRouter);
 app.use('/admin', adminRouter);
 

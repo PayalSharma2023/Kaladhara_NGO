@@ -12,7 +12,8 @@ cloudinary.config({
 
 module.exports.blog_get_all = async (req, res) => {
   try{
-    const blogs = await Blog.find().populate('Createdby', 'email').sort({ createdAt: -1 });
+    const blogs = await Blog.find({}).populate('Createdby', 'email').execPopulate().sort({ createdAt: -1 });
+    console.log(blogs)
     res.status(200).json(blogs)
     
   } catch (err) {
@@ -38,6 +39,7 @@ module.exports.blog_get_by_id = async (req, res) => {
 };
 
 module.exports.blog_post = async (req, res) => {
+  const volunteerId = req.user.id
   const { title, body, snippet, tags } = req.body;
   try {
 
@@ -61,7 +63,7 @@ module.exports.blog_post = async (req, res) => {
       snippet,
       body,
       tags,
-      // Createdby: volunteerId,
+      Createdby: volunteerId,
       // image: result.secure_url,
     });
 
