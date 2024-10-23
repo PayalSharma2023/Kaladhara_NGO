@@ -12,8 +12,9 @@ cloudinary.config({
 
 module.exports.blog_get_all = async (req, res) => {
   try{
-    const blogs = await Blog.find({}).sort(-1);
-    res.status(200).json(blogs)
+    const blogs = await Blog.find({}).populate('Createdby', 'email').sort({ createdAt: -1 });
+    console.log(blogs)
+    res.status(200).json(blogs)    
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: 'Server error fetching blogs' });
@@ -37,9 +38,25 @@ module.exports.blog_get_by_id = async (req, res) => {
 };
 
 module.exports.blog_post = async (req, res) => {
+  const volunteerId = req.user.id
   const { title, body, snippet, tags } = req.body;
   try {
-    const volunteerId = req.user.id;
+
+    let emptyFields = []
+
+    if (!title) {
+        emptyFields.push('title')
+    }
+    if (!snippet) {
+        emptyFields.push('reps')
+    }
+    if (!body) {
+        emptyFields.push('load')
+    }
+    if (emptyFields.length > 0){
+        return res.status(400).json({error: "please fill in all the fields", emptyFields})
+    }
+    // const volunteerId = req.user.id;
     const blog = await Blog.create({
       title,
       snippet,
@@ -127,9 +144,14 @@ module.exports.blog_update = async (req, res) => {
 
 module.exports.blog_delete = async (req, res) => {
   try {
-    const blogId = req.params.id;
+    const {id} = req.params;
+
+  //   if (!mongoose.Types.ObjectId.isValid(id)){
+  //     return res.status(404).json({error: 'No such workout'})
+  // }
+
     const user = req.user;
-    const blog = await Blog.findById(blogId);
+    const blog = await Blog.findById({_id: id});
 
     if (!blog) {
       return res.status(404).json({ message: 'Blog not found.' });
@@ -140,7 +162,7 @@ module.exports.blog_delete = async (req, res) => {
       return res.status(403).json({ message: 'Access denied: You can only update your own blogs.' });
     }
 
-    const deletedBlog = await Blog.findByIdAndDelete(blogId)
+    const deletedBlog = await Blog.findByIdAndDelete({_id: id})
 
     if (!deletedBlog) {
       return res.status(404).json({ message: 'Blog not found.' });

@@ -17,7 +17,7 @@ const approveVolunteer = async (req, res) => {
             return res.status(400).json({ message: 'User is not a volunteer' });
         }
 
-        volunteer.isApproved = isApproved;
+        volunteer.isApproved = true;
         await volunteer.save();
 
         res.status(200).json({ message: `Volunteer has been ${isApproved ? 'approved' : 'rejected'}`, volunteer });
@@ -41,7 +41,7 @@ const getVolunteersAwaitingApproval = async (req, res) => {
 // Get All Volunteers (Approved and Pending)
 const getAllVolunteers = async (req, res) => {
     try {
-        const volunteers = await User.find({ role: 'volunteer' }).select('-password');
+        const volunteers = await User.find({ role: 'volunteer' }).select('-password').sort({});
         res.status(200).json(volunteers);
     } catch (error) {
         console.error(error);

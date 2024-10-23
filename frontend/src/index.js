@@ -1,12 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import { BlogContextProvider } from "./context/BlogContext";
+import { AuthContextProvider } from "./context/AuthContext";
+import { VolunteerContextProvider } from "./context/VolunteerContext";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    <AuthContextProvider>
+      <VolunteerContextProvider>
+        <BlogContextProvider>
+          <App />
+        </BlogContextProvider>
+      </VolunteerContextProvider>
+    </AuthContextProvider>
   </React.StrictMode>
 );
 

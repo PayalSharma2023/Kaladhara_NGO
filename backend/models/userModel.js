@@ -22,8 +22,21 @@ const userSchema = new Schema(
 
     Volunteername: {
       type: String,
-      required: function() { return this.role === 'volunteer'; },
+      required: function () {
+        return this.role === "volunteer";
+      },
       trim: true,
+      
+    },
+    phone: {
+      type: String,
+      validate: {
+        validator: function (v) {
+          return /^\d{10}$/.test(v); // Basic phone number validation (10 digits)
+        },
+        message: (props) =>
+          `${props.value} is not a valid 10-digit phone number!`,
+      },
     },
 
     profilePicture: {
@@ -39,14 +52,14 @@ const userSchema = new Schema(
     },
 
     isApproved: {
-        type: Boolean,
-        default: function() { return this.role === 'volunteer' ? false : true; },
+      type: Boolean,
+      default: function () {
+        return this.role === "volunteer" ? false : true;
+      },
     },
 
-    description:{
-        type: String
-    },
-
+    gender: Boolean,
+    
     createdAt: {
       type: Date,
       default: Date.now(),
@@ -63,14 +76,14 @@ userSchema.post("save", function (doc, next) {
 
 //hashing password before saving it to db
 userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
-    try {
-        const salt = await bcrypt.genSalt();
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (err) {
-        next(err);
-    }
+  if (!this.isModified("password")) return next();
+  try {
+    const salt = await bcrypt.genSalt();
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 //creating a static method
