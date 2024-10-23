@@ -4,14 +4,17 @@ import "./index.css";
 import App from "./App";
 import { BlogContextProvider } from "./context/BlogContext";
 import { AuthContextProvider } from "./context/AuthContext";
+import { VolunteerContextProvider } from "./context/VolunteerContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <AuthContextProvider>
-    <BlogContextProvider>
-      <App />
-    </BlogContextProvider>
+      <VolunteerContextProvider>
+        <BlogContextProvider>
+          <App />
+        </BlogContextProvider>
+      </VolunteerContextProvider>
     </AuthContextProvider>
   </React.StrictMode>
 );

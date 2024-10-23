@@ -16,11 +16,22 @@ import {
 import AppRoutes from "./routes/AppRoutes";
 import { useAuthContext } from "./hooks/useAuthContext";
 
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+
 function App() {
   const {user} = useAuthContext()
   return (
     <div className="App">
       <BrowserRouter>
+      <ToastContainer
+                    position="bottom-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    theme="dark"
+                />
         <div className="flex h-screen">
           {user && (<Sidebar>
             <SidebarItem

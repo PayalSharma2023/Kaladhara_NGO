@@ -46,74 +46,66 @@ module.exports.signup_post = async (req, res) => {
 };
 
 module.exports.volunteer_signup_post = async (req, res, next) => {
-  const { Volunteername, email, password, description, skills } = req.body;
+  const { Volunteername, email, password, skills, gender, phone } = req.body;
   try {
-    const profilePicture = req.files.profilePicture;
-    // Check if files were uploaded
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send("No files were uploaded.");
-    }
+    // const profilePicture = req.files.profilePicture;
+    // // Check if files were uploaded
+    // if (!req.files || Object.keys(req.files).length === 0) {
+    //   return res.status(400).send("No files were uploaded.");
+    // }
 
-    // Check if tempFilePath exists
-    if (!profilePicture.tempFilePath) {
-      return res
-        .status(400)
-        .json({ errors: { photo: "Temporary file path is missing." } });
-    }
-    // Upload the file to Cloudinary
-    cloudinary.uploader.upload(
-      profilePicture.tempFilePath,
-      { folder: "volunteers" },
-      async (error, result) => {
-        if (error) {
-          console.error("Cloudinary Upload Error:", error);
-          return res.status(500).send("File upload failed.");
-        }
+    // // Check if tempFilePath exists
+    // if (!profilePicture.tempFilePath) {
+    //   return res
+    //     .status(400)
+    //     .json({ errors: { photo: "Temporary file path is missing." } });
+    // }
+    // // Upload the file to Cloudinary
+    // cloudinary.uploader.upload(
+    //   profilePicture.tempFilePath,
+    //   { folder: "volunteers" },
+    //   async (error, result) => {
+    //     if (error) {
+    //       console.error("Cloudinary Upload Error:", error);
+    //       return res.status(500).send("File upload failed.");
+    //     }
 
-        //Handle skills
-        let skillArray = [];
-        if (skills) {
-          if (Array.isArray(skills)) {
-            skillArray = skills;
-          } else if (typeof skills === "string") {
-            //Assuming skills are sent as a comma-seperated string
-            skillArray = skills.split(",").map((skill) => skill.trim());
-          }
+    //     // Optionally, delete the temporary file after uploading
+    //     fs.unlink(profilePicture.tempFilePath, (err) => {
+    //       if (err) console.error("Error deleting temp file:", err);
+    //     });
+    //   }
+    // );
 
-          //create the volunteer in the database
-        }
-        const volunteer = await User.create({
-          Volunteername,
-          email,
-          password,
-          profilePicture: result.secure_url,
-          description,
-          skills: skillArray,
-          role: 'volunteer'
-          // isApproved defaults to false for volunteers in the model
-        });
-
-        //create JWT token
-        const token = createToken(volunteer._id, volunteer.role);
-
-        //Set jwt token in a cookie
-        res.cookie("jwt", token, {
-          httpOnly: true,
-          secure: true,
-          maxAge: maxAge * 1000,
-        });
-
-        //respond with success
-        res.status(201).json({
-          volunteer: volunteer._id,
-        });
-
-        // Optionally, delete the temporary file after uploading
-        fs.unlink(profilePicture.tempFilePath, (err) => {
-          if (err) console.error("Error deleting temp file:", err);
-        });
+    //Handle skills
+    let skillArray = [];
+    if (skills) {
+      if (Array.isArray(skills)) {
+        skillArray = skills;
+      } else if (typeof skills === "string") {
+        //Assuming skills are sent as a comma-seperated string
+        skillArray = skills.split(",").map((skill) => skill.trim());
       }
-    );
+
+      //create the volunteer in the database
+    }
+    const volunteer = await User.create({
+      Volunteername,
+      email,
+      password,
+      // profilePicture: result.secure_url,
+      skills: skillArray,
+      phone,
+      gender,
+      role: 'volunteer',
+      isApproved: false
+    });
+
+    //respond with success
+    res.status(201).json({
+      volunteer: volunteer._id,
+    });
+
   } catch (err) {
     const errors = handlingErrors(err);
     res.status(400).json({ errors });

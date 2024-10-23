@@ -12,10 +12,9 @@ cloudinary.config({
 
 module.exports.blog_get_all = async (req, res) => {
   try{
-    const blogs = await Blog.find({}).populate('Createdby', 'email').execPopulate().sort({ createdAt: -1 });
+    const blogs = await Blog.find({}).populate('Createdby', 'email').sort({ createdAt: -1 });
     console.log(blogs)
-    res.status(200).json(blogs)
-    
+    res.status(200).json(blogs)    
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: 'Server error fetching blogs' });
@@ -158,10 +157,10 @@ module.exports.blog_delete = async (req, res) => {
       return res.status(404).json({ message: 'Blog not found.' });
     }
 
-    // // Check if the user is the author or an admin
-    // if (blog.Createdby.toString() !== user.id.toString() && !user.role.includes('admin')) {
-    //   return res.status(403).json({ message: 'Access denied: You can only update your own blogs.' });
-    // }
+    // Check if the user is the author or an admin
+    if (blog.Createdby.toString() !== user.id.toString() && !user.role.includes('admin')) {
+      return res.status(403).json({ message: 'Access denied: You can only update your own blogs.' });
+    }
 
     const deletedBlog = await Blog.findByIdAndDelete({_id: id})
 

@@ -3,12 +3,13 @@ import { ChevronFirst, ChevronLast, MoreVertical } from "lucide-react";
 import { createContext, useContext, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const SidebarContext = createContext();
 
 export default function Sidebar({ children }) {
   const [expanded, setExpanded] = useState(true);
-
+  const {user} = useAuthContext();
   return (
     <aside className="h-screen">
       <nav className="h-full flex flex-col bg-white border-r shadow-sm">
@@ -48,7 +49,7 @@ export default function Sidebar({ children }) {
           >
             <div className="leading-4">
               <h4 className="font-semibold">John Doe</h4>
-              <span className="text-xs text-gray-600">john@gmail.com</span>
+            <span className="text-xs text-gray-600">{user.role}</span>
             </div>
             <MoreVertical size={20} />
           </div>
