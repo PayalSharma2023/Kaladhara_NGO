@@ -8,6 +8,7 @@ const adminRouter = require('./routes/adminRoutes');
 const cookies = require('cookie-parser');
 const fileUplaod = require('express-fileupload');
 const path = require('path');
+const cors = require('cors')
 
 //express app setup
 const app = express()
@@ -19,6 +20,9 @@ app.use(fileUplaod({
 }))
 
 //middleware
+app.use(cors({
+    // origin: {"https://deploy-m"}
+}))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookies());
