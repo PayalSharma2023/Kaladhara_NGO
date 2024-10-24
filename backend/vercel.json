@@ -1,6 +1,13 @@
 {
+    "installCommand": "npm install --legavy-peer-deps",
     "version": 2,
-    "builds": [{ "src": "*.js", "use": "@vercel/node" }],
+    "builds": [
+        { "src": "server.js", 
+        "use": "@vercel/node" },
+    {
+        "src": "src/**/*",
+        "use": "@vercel/static"
+    }],
     "routes": [
         { "src": "/(.*)", "dest": "/" }
     ]

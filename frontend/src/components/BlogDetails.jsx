@@ -1,6 +1,6 @@
 import React from "react";
 import { useBlogsContext } from "../hooks/useBlogsHook";
-
+import sanitizeHtml from 'sanitize-html'; // Import dompurify
 //date fns
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { useAuthContext } from "../hooks/useAuthContext";
@@ -46,7 +46,8 @@ export function BlogDetails({ blog }) {
           </button>
         )}
       </div>
-      <p className="text-gray-600 mb-4">{blog.body}</p>
+      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(blog.body) }}/>
+      {/* <p className="text-gray-600 mb-4">{blog.body}</p> */}
       <p className="text-gray-600 mb-2">{blog.snippet}</p>
       <p className="text-sm text-gray-500 mb-2">
         Created{" "}
